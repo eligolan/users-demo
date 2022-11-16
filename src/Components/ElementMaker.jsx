@@ -1,8 +1,6 @@
-// ElementMaker.js
-
 import React from "react";
 
-function ElementMaker(props) {
+const ElementMaker = (props) => {
     return (
         <span>
             {

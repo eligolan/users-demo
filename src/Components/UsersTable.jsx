@@ -11,11 +11,14 @@ import Button from '@mui/material/Button';
 import axios from 'axios';
 import { Link } from "react-router-dom";
 import { DEFAULT_NUM_OF_USERS, BASE_API_URL } from "../utils/constants"
+import ElementMaker from "./ElementMaker"
 
 const UsersTable = () => {
     const [data, setData] = useState([]);
     const [selectValue, setSelectValue] = useState(DEFAULT_NUM_OF_USERS);
     const [changesUsers, setChangesUsers] = useState({});
+    const [showInputEle, setShowInputEle] = useState(false);
+    const [tempPhone, setTempPhone] = useState({});
 
     const initializeTableData = (numOfUsers) => {
         axios.get(`${BASE_API_URL}${numOfUsers}`)
@@ -58,6 +61,16 @@ const UsersTable = () => {
         window.localStorage.setItem('CHANGES_USERS_STATE', JSON.stringify(changesUsers));
     };
 
+    const onUpdateClick = (serialNumber) => {
+         changesUsers[serialNumber] = { deleted: true, phone: tempPhone }
+         window.localStorage.setItem('CHANGES_USERS_STATE', JSON.stringify(changesUsers));
+    };
+
+    const handleDoubleClick = (phone, serialNumber) => {
+        setTempPhone(phone)
+        setShowInputEle(true)
+    }
+
     return (
         <div>
             <Select
@@ -99,16 +112,20 @@ const UsersTable = () => {
                                     <TableCell>{firstName}</TableCell>
                                     <TableCell>{lastName}</TableCell>
                                     <TableCell>{email}</TableCell>
-                                    <TableCell>{phone}</TableCell>
+                                    <TableCell><ElementMaker
+                                        value={phone}
+                                        handleDoubleClick={() => handleDoubleClick(serialNumber)}
+                                        showInputEle={showInputEle}
+                                    /></TableCell>
                                     <TableCell>{gender}</TableCell>
-                                    <TableCell><Button variant="contained" color="primary">Update</Button></TableCell>
+                                    <TableCell><Button onClick={() => onUpdateClick(serialNumber)} variant="contained" color="primary">Update</Button></TableCell>
                                     <TableCell><Button onClick={() => onDeleteClick(serialNumber)} variant="contained" color="error">Delete</Button></TableCell>
                                 </TableRow>
-                    )
+                            )
                         })}
-                </TableBody>
-            </Table>
-        </Paper>
+                    </TableBody>
+                </Table>
+            </Paper>
         </div >
     )
 };
