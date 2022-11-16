@@ -12,19 +12,18 @@ import axios from 'axios';
 import { Link } from "react-router-dom";
 import { DEFAULT_NUM_OF_USERS, BASE_API_URL } from "../utils/constants"
 import ElementMaker from "./ElementMaker"
+import { UsersStore } from "../store/UsersStore";
+import { observer } from "mobx-react";
 
 const UsersTable = () => {
     const [data, setData] = useState([]);
     const [selectValue, setSelectValue] = useState(DEFAULT_NUM_OF_USERS);
     const [changesUsers, setChangesUsers] = useState({});
-    const [showInputEle, setShowInputEle] = useState(false);
-    const [tempPhone, setTempPhone] = useState({});
 
     const initializeTableData = (numOfUsers) => {
         axios.get(`${BASE_API_URL}${numOfUsers}`)
             .then((response) => {
-                console.log(response.data.results)
-                setData(response.data.results.map((item, index) => {
+                UsersStore.setData(response.data.results.map((item, index) => {
                     return {
                         serialNumber: index + 1,
                         firstName: item.name.first,
@@ -34,7 +33,8 @@ const UsersTable = () => {
                         gender: item.gender,
                         pic: item.picture,
                         location: item.location,
-                        age: item.dob.age
+                        age: item.dob.age,
+                        showInputEle: false,
                     }
                 }))
             })
@@ -61,14 +61,21 @@ const UsersTable = () => {
         window.localStorage.setItem('CHANGES_USERS_STATE', JSON.stringify(changesUsers));
     };
 
-    const onUpdateClick = (serialNumber) => {
-         changesUsers[serialNumber] = { deleted: true, phone: tempPhone }
-         window.localStorage.setItem('CHANGES_USERS_STATE', JSON.stringify(changesUsers));
+    const onUpdateClick = (serialNumber, index) => {
+        changesUsers[serialNumber] = { phone: UsersStore.data[index].phone }
+        window.localStorage.setItem('CHANGES_USERS_STATE', JSON.stringify(changesUsers));
     };
 
-    const handleDoubleClick = (phone, serialNumber) => {
-        setTempPhone(phone)
-        setShowInputEle(true)
+    const handleDoubleClick = (index) => {
+        UsersStore.data[index].showInputEle = true
+    }
+
+    const handlePhoneInputChange = (e, index) => {
+        UsersStore.data[index].phone = e.target.value;
+    }
+
+    const handlePhoneInputBlur = (index) => {
+        UsersStore.data[index].showInputEle = false;
     }
 
     return (
@@ -100,25 +107,33 @@ const UsersTable = () => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {data.map(({ serialNumber, firstName, lastName, email, phone, gender, pic, location, age }, index) => {
+                        {UsersStore.data.map(({ serialNumber, firstName, lastName, email, gender }, index) => {
                             if (changesUsers[serialNumber]?.deleted) {
                                 return null;
+                            }
+
+                            if (changesUsers[serialNumber]?.phone) {
+                                UsersStore.data[index].phone = changesUsers[serialNumber].phone;
                             }
                             return (
                                 <TableRow key={index}>
                                     <TableCell>
-                                        <Link to='about' state={{ firstName, lastName, email, phone, gender, pic, location, age }}>{serialNumber}</Link>
+                                        <Link onClick={() => {
+                                            UsersStore.setCurrentUser(UsersStore.data[index]);
+                                        }} to='about'>{serialNumber}</Link>
                                     </TableCell>
                                     <TableCell>{firstName}</TableCell>
                                     <TableCell>{lastName}</TableCell>
                                     <TableCell>{email}</TableCell>
                                     <TableCell><ElementMaker
-                                        value={phone}
-                                        handleDoubleClick={() => handleDoubleClick(serialNumber)}
-                                        showInputEle={showInputEle}
+                                        value={UsersStore.data[index].phone}
+                                        handleDoubleClick={() => handleDoubleClick(index)}
+                                        handleChange={(e) => handlePhoneInputChange(e, index)}
+                                        handleBlur={() => handlePhoneInputBlur(index)}
+                                        showInputEle={UsersStore.data[index].showInputEle}
                                     /></TableCell>
                                     <TableCell>{gender}</TableCell>
-                                    <TableCell><Button onClick={() => onUpdateClick(serialNumber)} variant="contained" color="primary">Update</Button></TableCell>
+                                    <TableCell><Button onClick={() => onUpdateClick(serialNumber, index)} variant="contained" color="primary">Update</Button></TableCell>
                                     <TableCell><Button onClick={() => onDeleteClick(serialNumber)} variant="contained" color="error">Delete</Button></TableCell>
                                 </TableRow>
                             )
@@ -130,4 +145,4 @@ const UsersTable = () => {
     )
 };
 
-export default UsersTable;
+export default observer(UsersTable);

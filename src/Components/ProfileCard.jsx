@@ -5,37 +5,38 @@ import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-import { useLocation } from 'react-router-dom'
+import { UsersStore } from "../store/UsersStore";
+import { observer } from "mobx-react";
 
 const ProfileCard = () => {
-  const location = useLocation()
-  const [locationBtn, setLocationBtn] = useState(false)
 
+  const [locationBtn, setLocationBtn] = useState(false);
+  
   return (
     <div className='centered'>
       <Card sx={{ width: 500 }}>
         <CardMedia
           component="img"
           height="140"
-          image={location.state.pic.large}
+          image={UsersStore.currentUser.pic.large}
           alt="green iguana"
         />
         <CardContent>
           {!locationBtn && <div>
             <Typography gutterBottom variant="h5" component="div">
-              {`${location.state.firstName} ${location.state.lastName}`}
+              {`${UsersStore.currentUser.firstName} ${UsersStore.currentUser.lastName}`}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {`Phone Number: ${location.state.phone}`}
+              {`Phone Number: ${UsersStore.currentUser.phone}`}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {`Gender: ${location.state.gender}`}
+              {`Gender: ${UsersStore.currentUser.gender}`}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {`Email: ${location.state.email}`}
+              {`Email: ${UsersStore.currentUser.email}`}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {`Age: ${location.state.age}`}
+              {`Age: ${UsersStore.currentUser.age}`}
             </Typography>
           </div>}
           {locationBtn && <div>
@@ -43,19 +44,19 @@ const ProfileCard = () => {
              Location Details
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {`Country: ${location.state.location.country}`}
+              {`Country: ${UsersStore.currentUser.gender}`}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {`City: ${location.state.location.city}`}
+              {`City: ${UsersStore.currentUser.location.city}`}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {`State: ${location.state.location.state}`}
+              {`State: ${UsersStore.currentUser.location.state}`}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {`Postcode: ${location.state.location.postcode}`}
+              {`Postcode: ${UsersStore.currentUser.location.postcode}`}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {`Street: ${location.state.location.street.name} ${location.state.location.street.number}`}
+              {`Street: ${UsersStore.currentUser.location.street.name} ${UsersStore.currentUser.location.street.number}`}
             </Typography>
           </div>}
         </CardContent>
@@ -70,4 +71,4 @@ const ProfileCard = () => {
   );
 }
 
-export default ProfileCard;
+export default observer(ProfileCard);
